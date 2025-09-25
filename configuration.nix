@@ -5,6 +5,7 @@
 # Usage: nix-shell (in directory with this file)
 
 { config, pkgs,.. }:
+{
 # /etc/nixos/configuration.
   services.desktopManager.plasma6.enable=true;
   virtualisation.docker.enable = true;

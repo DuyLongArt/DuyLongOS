@@ -4,16 +4,38 @@
 
 # Usage: nix-shell (in directory with this file)
 
-{ config, pkgs,.. }:
+{ config, pkgs, lib,  ... }:
 {
 # /etc/nixos/configuration.
   services.desktopManager.plasma6.enable=true;
+  
+  users.users={
+    duylong={
+    createHome=false;
+    decription="";
+    home="/home/duylong";
+    extraGroups=[
+      "wheel"
+      "networkmanager"
+    ];
+    group="admin";
+    uid=1000;
+    shell=pkgs.bash;
+    }
+
+  };
+  users.groups.admin={
+
+  };
   virtualisation.docker.enable = true;
-
-  users.extraGroups.docker.members = [ docker ];
-
-  # This allows you to use the modern 'docker compose' command
   virtualisation.docker.enableNixOSBuilds = true;
+
+
+  users.extraGroups.docker.members = [
+    "duylong"
+  ];
+  # This allows you to use the modern 'docker compose' command
+
  environment.systemPackages = with pkgs; [
       #Node 
       nodejs_22

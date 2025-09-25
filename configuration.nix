@@ -5,9 +5,9 @@
 # Usage: nix-shell (in directory with this file)
 
 { config, pkgs ? import <nixpkgs> {},.. }:
-# /etc/nixos/configuration.nix
-{
-  virtualisation.docker.enable = true;
+# /etc/nixos/configuration.
+services.desktopManager.plasma6.enable=true;
+virtualisation.docker.enable = true;
 
   users.extraGroups.docker.members = [ docker ];
 
@@ -19,8 +19,7 @@ pkgs.mkShell {
 name = “webdev-libcc-fix”;
 
 # Core development packages with proper library linking
-virtualisation.docker.enable;
-services.desktopManager.plasma6.enable;
+
 buildInputs = with pkgs; [
 # Essential C/C++ toolchain - fixes most libcc issues
 stdenv.cc.cc.lib

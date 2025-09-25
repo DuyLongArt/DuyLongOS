@@ -4,13 +4,23 @@
 
 # Usage: nix-shell (in directory with this file)
 
-{ pkgs ? import <nixpkgs> {} }:
+{ config, pkgs ? import <nixpkgs> {},.. }:
+# /etc/nixos/configuration.nix
+{
+  virtualisation.docker.enable = true;
+
+  users.extraGroups.docker.members = [ docker ];
+
+  # This allows you to use the modern 'docker compose' command
+  virtualisation.docker.enableNixOSBuilds = true;
+
 
 pkgs.mkShell {
 name = “webdev-libcc-fix”;
 
 # Core development packages with proper library linking
-
+virtualisation.docker.enable;
+services.desktopManager.plasma6.enable;
 buildInputs = with pkgs; [
 # Essential C/C++ toolchain - fixes most libcc issues
 stdenv.cc.cc.lib
@@ -40,7 +50,7 @@ sqlite
 sqlite.dev
 
 # Web development languages and tools
-nodejs_20
+nodejs_22
 nodePackages.npm
 nodePackages.yarn
 nodePackages.pnpm

@@ -6,16 +6,61 @@
 
 { config, pkgs, lib,  ... }:
 {
-# /etc/nixos/configuration.
+
+
+
+    imports =
+    [ # Include the results of the hardware scan.
+      ./hardware-configuration.nix
+    ];
+
+  # Bootloader.
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
+
+  networking.hostName = "nixos"; # Define your hostname.
+  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+
+  # Configure network proxy if necessary
+  # networking.proxy.default = "http://user:password@proxy:port/";
+  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
+
+  # Enable networking
+  networking.networkmanager.enable = true;
+
+  # Set your time zone.
+  time.timeZone = "Asia/Ho_Chi_Minh";
+
+  # Select internationalisation properties.
+  i18n.defaultLocale = "en_US.UTF-8";
+
+  i18n.extraLocaleSettings = {
+    LC_ADDRESS = "vi_VN";
+    LC_IDENTIFICATION = "vi_VN";
+    LC_MEASUREMENT = "vi_VN";
+    LC_MONETARY = "vi_VN";
+    LC_NAME = "vi_VN";
+    LC_NUMERIC = "vi_VN";
+    LC_PAPER = "vi_VN";
+    LC_TELEPHONE = "vi_VN";
+    LC_TIME = "vi_VN";
+  };
+
+# enable plasma 6 KDE
+ services.xserver.enable = false;
+
   services.desktopManager.plasma6.enable=true;
-   services.xserver.enable = true;
     services.displayManager.sddm.enable = true;
     services.displayManager.sddm.wayland.enable = true;
    
+  
+
+
   users.users={
     duylong={
+    isNormalUser = true;
     createHome=false;
-    decription="";
+    decription="Ngô Đoàn Duy Long";
     home="/home/duylong";
     extraGroups=[
       "wheel"
@@ -24,12 +69,53 @@
     group="admin";
     uid=1000;
     shell=pkgs.bash;
-    }
+    };
+     packages = with pkgs; [
+      kdePackages.kate
+    #  thunderbird
+    ];
 
   };
   users.groups.admin={
 
   };
+
+  # Enable CUPS to print documents.
+  services.printing.enable = true;
+
+  # Enable sound with pipewire.
+  services.pulseaudio.enable = false;
+  security.rtkit.enable = true;
+  services.pipewire = {
+    enable = true;
+    alsa.enable = true;
+    alsa.support32Bit = true;
+    pulse.enable = true;
+    # If you want to use JACK applications, uncomment this
+    #jack.enable = true;
+
+    # use the example session manager (no others are packaged yet so this is enabled by default,
+    # no need to redefine it in your config for now)
+    #media-session.enable = true;
+  };
+
+
+  boot.loader.grub = {
+  enable = true;
+  version = 2;
+  efiSupport = true;                # If you're using UEFI
+  efiInstallAsRemovable = true;    # Helps on systems with restricted EFI variables
+  device = "nodev";                # Required for EFI systems
+  };
+
+  boot.loader.systemd-boot.enable = false;  # Disable systemd-boot if previously used
+
+  boot.loader.grub.configurationLimit = 5;  # Optional: limit number of entries
+  boot.loader.grub.extraConfig = ''
+    set timeout=30
+    set default=0
+  '';
+
   virtualisation.docker.enable = true;
   virtualisation.docker.enableNixOSBuilds = true;
 

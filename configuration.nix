@@ -147,7 +147,7 @@ boot.loader.efi.canTouchEfiVariables=false;
   end
   # End Nix
   '';
-   environment.shells = with pkgs; [ bashInteractive  fish ];
+
 
  environment.systemPackages = with pkgs; [
       #Node
@@ -214,7 +214,7 @@ system.stateVersion="25.05";
   end
   # End Nix
   '';
-   environment.shells = with pkgs; [ bashInteractive  fish ];
+
 
  environment.systemPackages = with pkgs; [
       #Node

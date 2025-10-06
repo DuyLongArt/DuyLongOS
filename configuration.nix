@@ -5,20 +5,64 @@
 # Usage: nix-shell (in directory with this file)
 
 { config, pkgs, lib,  ... }:
+
+
+
+
 let
-  home-manager = builtins.fetchTarball https://github.com/nix-community/home-manager/archive/release-25.05.tar.gz;
+  # 1. Define Home Manager source
+  home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/release-25.05.tar.gz";
+  # 2. Define the JAR as a package
+  autoCopierJar = pkgs.stdenv.mkDerivation {
+    pname = "autofolder-copier-system";
+    version = "1.0";
+    src = /home/duylong/Desktop/Code/OSServices/AutofolderCopier.jar;
+    dontUnpack = true;
+    installPhase = ''
+      mkdir -p $out/jar
+      cp $src $out/jar/AutofolderCopier.jar
+    '';
+  };
 in
 {
-
-
-
-    imports =
+   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
-
-     (import "${home-manager}/nixos")
+      # Import the Home Manager module using the fetched tarball
+      (import "${home-manager}/nixos")
     ];
 
+  # 2. Define the systemd service with 120 second delay
+  systemd.services.autofoldercopier = {
+    enable = true;
+    description = "AutoFolderCopier System Service";
+
+    serviceConfig = {
+     Type = "oneshot";  # Run once and exit
+      ExecStart = "${pkgs.jre_headless}/bin/java -jar ${autoCopierJar}/jar/AutofolderCopier.jar";
+      # Run silently
+      StandardOutput = "null";
+      StandardError = "null";
+    };
+
+    # Start after network and wait 120 seconds
+    after = [ "network.target" ];
+    wantedBy = [ "multi-user.target" ];
+
+    # Add 120 second delay using a timer
+  };
+
+  # Create a timer to delay the service start by 120 seconds
+  systemd.timers.autofoldercopier = {
+    enable = true;
+    description = "Timer for AutoFolderCopier (120s delay)";
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnBootSec = "120s";  # Start 120 seconds after boot
+       OnUnitActiveSec = "120s";
+      Unit = "autofoldercopier.service";
+    };
+  };
 
 
 
@@ -92,6 +136,7 @@ users.users = {
     shell = pkgs.bash;
     packages = with pkgs; [
       #pkgs.libsForQt5.kate
+      tailscale
    pkgs.kdePackages.kate
       thunderbird
       affine
@@ -141,6 +186,8 @@ boot.loader.efi.canTouchEfiVariables=false;
     set timeout=300
     set default=0
   '';
+
+   services.tailscale.enable = true;
 
   virtualisation.docker.enable = true;
   # Docker group configuration (ensure Docker service is enabled)
@@ -198,6 +245,11 @@ boot.loader.efi.canTouchEfiVariables=false;
   networking.firewall = {
     enable = true;
     allowPing = true;
+
+    # Allow all traffic from the tailscale network interface
+    trustedInterfaces = [ "tailscale0" ];
+    # Open the UDP port for Tailscale
+    allowedUDPPorts = [ config.services.tailscale.port ];
   };
   # Create password files and secrets (using text-based configuration)
 
@@ -243,6 +295,8 @@ services=
 };
 
 
+
+programs.java.enable=true;
   # Enable Fish shell and Nix initialization
   programs.fish.enable = true;
   programs.fish.shellInit = ''

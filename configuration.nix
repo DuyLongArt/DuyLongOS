@@ -279,7 +279,9 @@ services=
     # --- Start of config block (MUST be here, at the same level as extraApps) ---
     settings={
       trusted_domains=[
-      "192.168.1.142"];
+      "192.168.1.142"
+"100.64.22.2"
+];
     };
     config = {
 #       overwriteProtocol = "https";
